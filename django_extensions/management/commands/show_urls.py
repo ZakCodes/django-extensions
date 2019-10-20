@@ -45,6 +45,7 @@ else:
 FMTR = {
     'dense': "{url}\t{module}\t{url_name}\t{decorator}",
     'table': "{url},{module},{url_name},{decorator}",
+    'rst': "{url},{module},{url_name},{decorator}",
     'aligned': "{url},{module},{url_name},{decorator}",
     'verbose': "{url}\n\tController: {module}\n\tURL Name: {url_name}\n\tDecorators: {decorator}\n",
     'json': '',
@@ -184,6 +185,29 @@ class Command(BaseCommand):
                 table_views.append(
                     ' | '.join('{0:<{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
                 )
+
+            # Replace original views so we can return the same object
+            views = table_views
+        elif format_style == 'rst':
+            import itertools as it
+            # Reformat all data and show in a reStructuredText grid table
+
+            views = [row.split(',', 3) for row in views]
+            header = (style.MODULE_NAME('URL'), style.MODULE_NAME('Module'), style.MODULE_NAME('Name'), style.MODULE_NAME('Decorator'))
+            widths = [len(max(it.chain(columns, [header]), key=len)) for columns, header in zip(zip(*views), header)]
+            table_views = []
+
+            table_views.append('+-' + '-+-'.join('-' * width for width in widths) + '-+')
+            table_views.append(
+                '| ' + ' | '.join('{0:<{1}}'.format(title, width) for width, title in zip(widths, header)) + ' |'
+            )
+            table_views.append('+=' + '=+='.join('=' * width for width in widths) + '=+')
+
+            for row in views:
+                table_views.append(
+                    '| ' + ' | '.join('{0:<{1}}'.format(cdata, width) for width, cdata in zip(widths, row)) + ' |'
+                )
+                table_views.append('+-' + '-+-'.join('-' * width for width in widths) + '-+')
 
             # Replace original views so we can return the same object
             views = table_views

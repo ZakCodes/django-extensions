@@ -33,7 +33,7 @@ class ShowUrlsExceptionsTests(TestCase):
     """Tests if show_urls command raises exceptions."""
 
     def test_should_raise_CommandError_when_format_style_does_not_exists(self):
-        with six.assertRaisesRegex(self, CommandError, "Format style 'invalid_format' does not exist. Options: aligned, dense, json, pretty-json, table, verbose"):
+        with six.assertRaisesRegex(self, CommandError, "Format style 'invalid_format' does not exist. Options: aligned, dense, json, pretty-json, table, rst, verbose"):
             call_command('show_urls', '--format=invalid_format')
 
     def test_should_raise_CommandError_when_doesnt_have_urlconf_attr(self):
@@ -100,6 +100,20 @@ class ShowUrlsTests(TestCase):
         self.assertIn('/class/based/    | tests.management.commands.test_show_urls.ClassView           | class-based-view    |', m_stdout.getvalue())
         self.assertIn('/function/based/ | tests.management.commands.test_show_urls.function_based_view | function-based-view |', m_stdout.getvalue())
         self.assertIn('/lambda/view     | tests.management.commands.test_show_urls.<lambda>            |                     |', m_stdout.getvalue())
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_show_urls_in_rst_format(self, m_stdout):
+        call_command('show_urls', '--format=rst')
+
+        self.assertIn('+------------------+--------------------------------------------------------------+---------------------+', m_stdout.getvalue())
+        self.assertIn('| /class/based/    | tests.management.commands.test_show_urls.ClassView           | class-based-view    |', m_stdout.getvalue())
+        self.assertIn('+==================+==============================================================+=====================+', m_stdout.getvalue())
+        self.assertIn('| /class/based/    | tests.management.commands.test_show_urls.ClassView           | class-based-view    |', m_stdout.getvalue())
+        self.assertIn('+------------------+--------------------------------------------------------------+---------------------+', m_stdout.getvalue())
+        self.assertIn('| /function/based/ | tests.management.commands.test_show_urls.function_based_view | function-based-view |', m_stdout.getvalue())
+        self.assertIn('+------------------+--------------------------------------------------------------+---------------------+', m_stdout.getvalue())
+        self.assertIn('| /lambda/view     | tests.management.commands.test_show_urls.<lambda>            |                     |', m_stdout.getvalue())
+        self.assertIn('+------------------+--------------------------------------------------------------+---------------------+', m_stdout.getvalue())
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_show_urls_in_aligned_format(self, m_stdout):
