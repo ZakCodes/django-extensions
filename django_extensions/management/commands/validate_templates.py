@@ -69,6 +69,7 @@ class Command(BaseCommand):
                 if os.path.isdir(app_template_dir):
                     template_dirs.add(app_template_dir)
 
+        template_dirs = map(lambda path: os.path.abspath(path), template_dirs)
         settings.TEMPLATES[0]['DIRS'] = list(template_dirs)
         settings.TEMPLATE_DEBUG = True
         verbosity = options["verbosity"]
